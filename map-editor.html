@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tibia Clone - Map Editor</title>
+    <link rel="stylesheet" href="map-editor.css">
+</head>
+<body>
+    <div class="editor-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Map Editor</h1>
+            <div class="header-controls">
+                <button id="newMapBtn" class="btn">New Map</button>
+                <button id="importBtn" class="btn">Import JSON</button>
+                <button id="exportBtn" class="btn btn-primary">Export JSON</button>
+                <button id="exportImageBtn" class="btn">Export PNG</button>
+            </div>
+        </div>
+
+        <!-- Main Editor Layout -->
+        <div class="editor-layout">
+            <!-- Left Sidebar - Sprite Palette -->
+            <div class="sidebar sidebar-left">
+                <div class="palette-header">
+                    <h3>Sprite Palette</h3>
+                    <input type="text" id="spriteSearch" placeholder="Search sprites..." class="search-input">
+                </div>
+
+                <div class="palette-grid" id="paletteGrid">
+                    <!-- Sprites will be loaded here -->
+                </div>
+
+                <div class="pagination">
+                    <button id="prevPage" class="btn btn-small">Previous</button>
+                    <span id="pageInfo">Page 1</span>
+                    <button id="nextPage" class="btn btn-small">Next</button>
+                </div>
+
+                <div class="selected-sprite-info">
+                    <h4>Selected Sprite</h4>
+                    <div id="selectedSpritePreview" class="sprite-preview-large">
+                        <span class="no-selection">No sprite selected</span>
+                    </div>
+                    <div id="selectedSpriteDetails">
+                        <p><strong>Name:</strong> <span id="spriteName">-</span></p>
+                        <p><strong>File:</strong> <span id="spriteFile">-</span></p>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="spriteWalkable">
+                            Walkable
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center - Canvas Area -->
+            <div class="canvas-area">
+                <div class="canvas-controls">
+                    <div class="tool-group">
+                        <button id="toolPencil" class="tool-btn active" title="Pencil (P)">
+                            <span>✏️</span>
+                        </button>
+                        <button id="toolFill" class="tool-btn" title="Fill Bucket (F)">
+                            <span>🪣</span>
+                        </button>
+                        <button id="toolEraser" class="tool-btn" title="Eraser (E)">
+                            <span>🧹</span>
+                        </button>
+                        <button id="toolEyedropper" class="tool-btn" title="Eyedropper (I)">
+                            <span>💧</span>
+                        </button>
+                    </div>
+
+                    <div class="mode-toggle">
+                        <button id="tileMode" class="mode-btn active">Tile Mode</button>
+                        <button id="sectorMode" class="mode-btn">Sector Mode</button>
+                    </div>
+
+                    <div class="view-controls">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="showGrid" checked>
+                            Show Grid
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="showSectors" checked>
+                            Show Sectors
+                        </label>
+                        <button id="zoomOut" class="btn btn-small">-</button>
+                        <span id="zoomLevel">100%</span>
+                        <button id="zoomIn" class="btn btn-small">+</button>
+                    </div>
+
+                    <div class="action-controls">
+                        <button id="undoBtn" class="btn btn-small" title="Undo (Ctrl+Z)">↶ Undo</button>
+                        <button id="redoBtn" class="btn btn-small" title="Redo (Ctrl+Y)">↷ Redo</button>
+                        <button id="clearBtn" class="btn btn-small btn-danger">Clear Map</button>
+                    </div>
+                </div>
+
+                <div class="canvas-wrapper" id="canvasWrapper">
+                    <canvas id="mapCanvas"></canvas>
+                </div>
+
+                <div class="canvas-info">
+                    <span>Mouse: <span id="mousePos">-, -</span></span>
+                    <span>Map Size: <span id="mapSize">20 x 15</span></span>
+                    <span>Tiles Placed: <span id="tileCount">0</span></span>
+                    <span id="currentSectorInfo"></span>
+                </div>
+            </div>
+
+            <!-- Right Sidebar - Layers & Settings -->
+            <div class="sidebar sidebar-right">
+                <div class="panel" id="sectorsPanel">
+                    <h3>Sectors</h3>
+                    <div id="sectorsList" class="sectors-list">
+                        <!-- Sectors will be added here -->
+                    </div>
+                    <button id="addSectorBtn" class="btn btn-small btn-primary">+ Add Sector</button>
+                </div>
+
+                <div class="panel" id="sectorPropertiesPanel" style="display: none;">
+                    <h3>Sector Properties</h3>
+                    <div class="setting-row">
+                        <label>Name:</label>
+                        <input type="text" id="sectorName" class="input-small" placeholder="Sector name">
+                    </div>
+                    <div class="setting-row">
+                        <label>Color:</label>
+                        <input type="color" id="sectorColor" class="color-input" value="#3498db">
+                    </div>
+                    <div class="setting-row">
+                        <label>Opacity:</label>
+                        <input type="range" id="sectorOpacity" min="0" max="100" value="30" class="opacity-slider">
+                        <span id="opacityValue">30%</span>
+                    </div>
+                    <div class="setting-row">
+                        <label>PVP Enabled:</label>
+                        <input type="checkbox" id="sectorPvp">
+                    </div>
+                    <div class="setting-row">
+                        <label>Music:</label>
+                        <input type="text" id="sectorMusic" class="input-small" placeholder="theme.mp3">
+                    </div>
+                    <div class="custom-properties">
+                        <h4>Custom Properties</h4>
+                        <div id="customPropertiesList"></div>
+                        <button id="addPropertyBtn" class="btn btn-small">+ Add Property</button>
+                    </div>
+                    <button id="deleteSectorBtn" class="btn btn-small btn-danger">Delete Sector</button>
+                </div>
+
+                <div class="panel">
+                    <h3>Layers</h3>
+                    <div id="layersList" class="layers-list">
+                        <div class="layer-item active" data-layer="0">
+                            <span>Ground Layer</span>
+                            <div class="layer-controls">
+                                <button class="btn-icon" title="Toggle visibility">👁️</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="addLayerBtn" class="btn btn-small">+ Add Layer</button>
+                </div>
+
+                <div class="panel">
+                    <h3>Map Settings</h3>
+                    <div class="setting-row">
+                        <label>Width:</label>
+                        <input type="number" id="mapWidth" value="20" min="5" max="100" class="input-small">
+                    </div>
+                    <div class="setting-row">
+                        <label>Height:</label>
+                        <input type="number" id="mapHeight" value="15" min="5" max="100" class="input-small">
+                    </div>
+                    <div class="setting-row">
+                        <label>Tile Size:</label>
+                        <input type="number" id="tileSize" value="32" min="16" max="64" class="input-small">
+                    </div>
+                    <button id="applyMapSettings" class="btn btn-small btn-primary">Apply Settings</button>
+                </div>
+
+                <div class="panel">
+                    <h3>Quick Actions</h3>
+                    <button id="fillAllBtn" class="btn btn-small">Fill All with Selected</button>
+                    <button id="loadGameBtn" class="btn btn-small">Load in Game</button>
+                </div>
+
+                <div class="panel stats-panel">
+                    <h3>Statistics</h3>
+                    <p>Total Sprites: <span id="totalSprites">0</span></p>
+                    <p>Named Sprites: <span id="namedSprites">0</span></p>
+                    <p>Unique Sprites Used: <span id="uniqueSprites">0</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for sprite naming -->
+    <div id="nameModal" class="modal">
+        <div class="modal-content">
+            <h2>Name This Sprite</h2>
+            <div class="modal-sprite-preview" id="modalSpritePreview"></div>
+            <input type="text" id="spriteNameInput" placeholder="Enter sprite name (e.g., grass, water, tree)" class="input-large">
+            <div class="sprite-name-suggestions">
+                <p>Common names:</p>
+                <button class="suggestion-btn" data-name="grass">Grass</button>
+                <button class="suggestion-btn" data-name="water">Water</button>
+                <button class="suggestion-btn" data-name="dirt">Dirt</button>
+                <button class="suggestion-btn" data-name="stone">Stone</button>
+                <button class="suggestion-btn" data-name="tree">Tree</button>
+                <button class="suggestion-btn" data-name="wall">Wall</button>
+            </div>
+            <label class="checkbox-label">
+                <input type="checkbox" id="modalWalkable" checked>
+                Walkable tile
+            </label>
+            <div class="modal-actions">
+                <button id="cancelNameBtn" class="btn">Cancel</button>
+                <button id="saveNameBtn" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file input for import -->
+    <input type="file" id="fileInput" accept=".json" style="display: none;">
+
+    <script src="map-editor.js"></script>
+</body>
+</html>

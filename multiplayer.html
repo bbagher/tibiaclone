@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tibia Clone - Multiplayer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a1a1a;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 1200px;
+        }
+
+        .game-header {
+            text-align: center;
+        }
+
+        .game-header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .multiplayer-badge {
+            background: #4a4;
+            color: #fff;
+            padding: 5px 15px;
+            border-radius: 15px;
+            display: inline-block;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .game-wrapper {
+            display: flex;
+            gap: 20px;
+        }
+
+        #gameCanvas {
+            border: 3px solid #4a4a4a;
+            background: #2a2a2a;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            cursor: crosshair;
+        }
+
+        .sidebar {
+            background: #2a2a2a;
+            border: 3px solid #4a4a4a;
+            padding: 20px;
+            min-width: 250px;
+        }
+
+        .stat-panel {
+            margin-bottom: 20px;
+        }
+
+        .stat-panel h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .health-bar, .monster-health-bar {
+            background: #444;
+            height: 30px;
+            border: 2px solid #666;
+            position: relative;
+            margin: 10px 0;
+        }
+
+        .health-fill {
+            background: linear-gradient(to bottom, #ff4444, #cc0000);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .health-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        .stat-line {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+
+        .controls {
+            background: #333;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .controls h4 {
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .controls kbd {
+            background: #555;
+            padding: 3px 8px;
+            border-radius: 3px;
+            border: 1px solid #777;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+
+        .log {
+            background: #1a1a1a;
+            padding: 15px;
+            border: 2px solid #444;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin: 3px 0;
+            opacity: 0.9;
+        }
+
+        .log-entry.damage {
+            color: #ff6666;
+        }
+
+        .log-entry.heal {
+            color: #66ff66;
+        }
+
+        .log-entry.info {
+            color: #66ccff;
+        }
+
+        .game-over {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 40px;
+            border: 4px solid #ff0000;
+            text-align: center;
+            display: none;
+        }
+
+        .game-over h2 {
+            color: #ff0000;
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .game-over button {
+            background: #4a4a4a;
+            color: #fff;
+            border: 2px solid #666;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+        }
+
+        .game-over button:hover {
+            background: #666;
+        }
+
+        .info-box {
+            background: #2a4a2a;
+            border: 2px solid #4a4;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .info-box h4 {
+            color: #4f4;
+            margin-bottom: 8px;
+        }
+
+        .info-box p {
+            font-size: 13px;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>Tibia Clone - Multiplayer</h1>
+            <div class="multiplayer-badge">ONLINE MULTIPLAYER</div>
+            <p style="margin-top: 10px;">Play together with friends!</p>
+        </div>
+
+        <div class="game-wrapper">
+            <canvas id="gameCanvas"></canvas>
+
+            <div class="sidebar">
+                <div class="stat-panel">
+                    <h3>Your Character</h3>
+                    <div class="health-bar">
+                        <div class="health-fill" id="playerHealthFill" style="width: 100%"></div>
+                        <div class="health-text" id="playerHealthText">100 / 100</div>
+                    </div>
+                    <div class="stat-line">Position: <span id="playerPos">-</span></div>
+                    <div class="stat-line">Damage: <span id="playerDamage">-</span></div>
+                </div>
+
+                <div class="stat-panel">
+                    <h3>Monsters</h3>
+                    <div class="monster-health-bar">
+                        <div class="health-fill" id="monsterHealthFill" style="width: 100%"></div>
+                        <div class="health-text" id="monsterHealthText">-</div>
+                    </div>
+                    <div class="stat-line">Position: <span id="monsterPos">-</span></div>
+                    <div class="stat-line">Status: <span id="monsterStatus">-</span></div>
+                </div>
+
+                <div class="controls">
+                    <h4>Controls</h4>
+                    <div><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> - Move</div>
+                    <div><kbd>CLICK</kbd> - Fireball (15 dmg)</div>
+                    <div style="margin-top: 8px; font-size: 12px; opacity: 0.8;">
+                        Fireball cooldown: 1s
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <h4>How to Play Together</h4>
+                    <p>
+                        Share this URL with friends to play together!<br>
+                        Work together to defeat monsters.<br>
+                        Multiple monsters spawn for more challenge.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="log" id="gameLog">
+            <div class="log-entry info">Connecting to server...</div>
+        </div>
+    </div>
+
+    <div class="game-over" id="gameOver">
+        <h2>GAME OVER</h2>
+        <p style="margin-bottom: 20px; font-size: 1.2rem;">You have been defeated!</p>
+        <button onclick="location.reload()">Respawn</button>
+    </div>
+
+    <script src="game-multiplayer.js"></script>
+</body>
+</html>

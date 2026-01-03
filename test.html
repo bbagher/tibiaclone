@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Canvas Rendering</title>
+    <style>
+        body {
+            background: #1a1a1a;
+            color: #fff;
+            font-family: monospace;
+            padding: 20px;
+        }
+        canvas {
+            border: 2px solid #0f0;
+            display: block;
+            margin: 20px auto;
+        }
+        .info {
+            text-align: center;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h2>Canvas Rendering Test</h2>
+        <p>You should see a green grid with emojis below</p>
+    </div>
+
+    <canvas id="testCanvas"></canvas>
+
+    <div class="info" id="status">Initializing...</div>
+
+    <script>
+        const canvas = document.getElementById('testCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = 640;
+        canvas.height = 480;
+
+        const status = document.getElementById('status');
+
+        // Test 1: Fill background
+        ctx.fillStyle = '#2a2a2a';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        status.innerHTML += '<br>✓ Background filled';
+
+        // Test 2: Draw text
+        ctx.fillStyle = '#fff';
+        ctx.font = '20px Arial';
+        ctx.fillText('Test Text', 100, 100);
+        status.innerHTML += '<br>✓ Text rendered';
+
+        // Test 3: Draw emojis
+        const emojis = ['🟩', '🟦', '🌲', '⬛', '🟫', '🧙', '👹', '🔥'];
+        let x = 50;
+        let y = 150;
+
+        emojis.forEach((emoji, i) => {
+            ctx.font = '32px Arial';
+            ctx.fillText(emoji, x + (i * 70), y);
+        });
+        status.innerHTML += '<br>✓ Emojis rendered';
+
+        // Test 4: Draw a grid
+        ctx.strokeStyle = '#0f0';
+        ctx.lineWidth = 1;
+
+        for (let i = 0; i < 20; i++) {
+            ctx.beginPath();
+            ctx.moveTo(i * 32, 200);
+            ctx.lineTo(i * 32, 480);
+            ctx.stroke();
+        }
+
+        for (let i = 0; i < 15; i++) {
+            ctx.beginPath();
+            ctx.moveTo(0, 200 + i * 32);
+            ctx.lineTo(640, 200 + i * 32);
+            ctx.stroke();
+        }
+        status.innerHTML += '<br>✓ Grid rendered';
+
+        // Test 5: Draw emoji grid
+        const tiles = ['🟩', '🟦', '🌲'];
+        for (let y = 0; y < 5; y++) {
+            for (let x = 0; x < 10; x++) {
+                const emoji = tiles[Math.floor(Math.random() * tiles.length)];
+                ctx.font = '28px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(
+                    emoji,
+                    x * 32 + 16,
+                    216 + y * 32 + 16
+                );
+            }
+        }
+        status.innerHTML += '<br>✓ Emoji grid rendered';
+        status.innerHTML += '<br><br><strong>All tests passed!</strong>';
+    </script>
+</body>
+</html>
