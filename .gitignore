@@ -4,5 +4,4 @@ package-lock.json
 *.log
 venv/
 __pycache__/
-sprites_output/
 .claude/
